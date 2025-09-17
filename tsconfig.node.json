@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "skipLibCheck": false,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@shared/*": ["./shared/*"],
+      "@convex/*": ["./convex/*"]
+    },
+    "types": ["node", "external"],
+    "typeRoots": ["./types", "./node_modules/@types"],
+    "customConditions": ["@convex-dev/component-source"]
+  },
+  "include": ["vite.config.ts", "eslint.config.js"],
+  "references": [{ "path": "./shared/tsconfig.json" }]
+}
