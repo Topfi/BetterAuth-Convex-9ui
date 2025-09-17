@@ -11,7 +11,6 @@
   </p>
 </div>
 
-<p align="center">
   [![React 19 badge](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=1a1a1a)](https://react.dev/)
   [![Vite badge](https://img.shields.io/badge/Vite-7.1-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
   [![Convex badge](https://img.shields.io/badge/Convex-1.27-3b82f6?logo=convex&logoColor=white)](https://www.convex.dev/)
@@ -19,7 +18,6 @@
   [![TypeScript badge](https://img.shields.io/badge/TypeScript-5.9-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
   [![9ui.dev badge](https://img.shields.io/badge/9ui.dev-UI%20primitives-111827?logo=tailwindcss&logoColor=38bdf8)](https://www.9ui.dev/)
   [![License: EUPL 1.2](https://img.shields.io/badge/License-EUPL%201.2-blue.svg)](https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12)
-</p>
 
 A casual-but-capable Better Auth implementation that shows how Convex and React 19 play together, whilst keeping security and DX in mind. Ships with core flows wired up, well styled UI thanks to 9ui.dev, and enough polish that you can drop it into a demo or grow it into production.
 
