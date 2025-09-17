@@ -84,7 +84,7 @@ Yes, Better Auth is new and that will, worringly, always attract me to some exte
    npm run dev
    ```
 
-The app lives at `http://localhost:5173`. Convex functions are exposed at `http://127.0.0.1:8187` during dev.
+The app lives at `http://localhost:5173`.
 
 ## Adapting to Your Own App
 
