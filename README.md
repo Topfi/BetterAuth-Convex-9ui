@@ -26,14 +26,14 @@ A casual-but-capable Better Auth implementation that shows how Convex and React 
 - **Full auth**: passphrase sign-up/sign-in, passphrase resets, email verification, magic links, and one-time codes all reuse shared Zod schemas so the client and Convex agree on every payload.
 - **Social sign-in + linking**: GitHub, Google, and Apple OAuth work out of the box once you drop in credentials, and the UI/helpers are ready for future providers. Account linking is enabled.
 - **Security niceties**: Email OTP plugin doubles as step-up verification, passphrase helpers centralize zxcvbn + Have I Been Pwned checks through the Better Auth plugin, enforce a 16+ character policy, and drive the shared color-coded strength meter.
-- **Rate limiting + audit trails**: Better Auth's built-in limiter is persisted to Convex for consistent enforcement across pods, and destructive operations (like account deletion) append structured audit logs for later review.
-- **Productized UX**: Sign-in/up cards follow the gradient shell, toast helpers map to severity colors, and the application header keeps avatars and primary actions (settings + sign-out) consistent.
-- **Composable signed-in shell**: The authenticated experience is routed through a single layout so you can swap the default application without touching auth plumbing.
-- **Settings**: A dedicated settings surface lets users edit their profile, trigger email reverification, rotate passphrases with generators + breach checks, preview the forthcoming 2FA flow, export data, and type-to-confirm account deletion.
-- **DX-friendly env bootstrap**: `npm run setup:env` keeps `.env.local` aligned with the shared template and syncs Convex secrets, so spinning up a fresh machine or new deployment slug is painless.
-- **Realtime counter sample**: Shared `counter` module keeps optimistic UI, Convex mutations, and account deletion purging perfectly in sync.
-- **Email preview/dev mode**: Flip one flag to dump rendered React Email templates to the console instead of hitting Resend.
-- **Easter Egg**: I included a small, but very nerdy easter egg for you to find.
+- **Scripts**: Simple one line setup and update scripts that guide you to a solid setup and ensure you are warned rather than accidentally overwriting remote envs.
+- **Rate limiting + audit trails**: Better Auths built-in limiter is persisted to Convex for consistent enforcement across pods, and destructive operations (like account deletion) append structured audit logs for later review.
+- **Productiion UX**: Sign-in/up cards follow the gradient shell, toast helpers map to severity colors, and the application header keeps avatars and primary actions (settings + sign-out) consistent.
+- **Composable shell**: The authenticated experience is routed through a single layout so you can swap the default application without touching auth plumbing.
+- **Settings**: A dedicated settings surface lets users edit their profile, trigger email reverification, rotate passphrases with generators + breach checks, preview the soonTM to be implemented 2FA and export data flows, and do proper, comprehensive, allencompassing account deletion.
+- **Realtime counter sample**: Simple counter code using Convex [withOptimisticUpdate](https://docs.convex.dev/client/react/optimistic-updates), just so you have an easy way to check things are working.
+- **Email preview/dev mode**: Flip one flag to dump verification, Magic Link and Code emails to the console for testing without Resend keys.
+- **Easter Egg**: I included a small, but very nerdy easter egg for you to find. I will probably add a env soon to turn it off, alongside the 2FA and data export feature.
 
 ## Why 9ui.dev
 
@@ -41,7 +41,7 @@ A casual-but-capable Better Auth implementation that shows how Convex and React 
 
 ## Why zxcvbn + Have I Been Pwned
 
-zxcvbn has been my choice because it encodes so much practical knowledge about how people actually assemble passphrases. Pairing that with Have I Been Pwned just makes sense: if the zxcvbn score tells you how resilient your passphrase might be, HIBP tells you whether the exact string has already been a part of one of the many data breaches we somehow have just come to accept. I've been following Troy Hunt's work since the early 2010s (thanks to SemperVideo back in the day), long enough to see the steady stream of "why did you hack me" mails he still receives despite repeatedly explaining what the service actually does. Anyone who keeps volunteering that kind of community service in the face of persistent misunderstandings can be relied upon in my book. The fact that there is an amazingly handy HIBP plugin for Better Auth which made this basically a five line process is of course a pure coincidence...
+zxcvbn has been my choice because it encodes so much practical knowledge about how people actually assemble passphrases. Pairing that with Have I Been Pwned just makes sense: if the zxcvbn score tells you how resilient your passphrase might be, HIBP tells you whether the exact string has already been a part of one of the many data breaches we somehow have just come to accept. I've been following Troy Hunts work since the early 2010s (thanks to SemperVideo back in the day), long enough to see the steady stream of "why did you hack me" mails he still receives despite repeatedly explaining what the service actually does. Anyone who keeps volunteering that kind of community service in the face of persistent misunderstandings can be relied upon in my book. The fact that there is an amazingly handy HIBP plugin for Better Auth which made this basically a five line process is of course a pure coincidence...
 
 ## Why Better Auth
 
@@ -52,80 +52,131 @@ Yes, Better Auth is new and that will, worringly, always attract me to some exte
 - React 19 with the React Compiler + Vite 7
 - Convex backend with Better Auth server plugin suite (magic link, email OTP, account linking, cross-domain)
 - Base UI primitives + Tailwind CSS v4 curtesy of 9ui.dev (under `src/components/ui`)
-- React Hook Form + Zod for synced validation
+- React Hook Form + Zod for synced validation, again thanks to 9ui.dev
 - Vitest + Testing Library for unit and component coverage
 
 ## Getting Started
 
 ### Prerequisites
 
-- The Convex CLI (`npm install -g convex` or use `npx convex ...`)
-- Resend API key if you want to send real mail (optional in development)
-- OTP API key if you want to use Google, Github or Apple OAuth
+- The Convex CLI (`npm install -g convex` or use `npx convex ...`)
+- Resend API key if you want to send real mail (optional in development)
+- OTP API key if you want to use Google, Github or Apple OAuth
 
-### Local Setup
+### Setup
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Initialize your environment (each command is safe to re-run):
-   ```bash
-   npm run setup:env
-   npx convex dev --once
-   npm run setup:env
-   ```
-   The setup script bootstraps `.env.local`, keeps it aligned with `.env.example`,
-   and syncs shared flags into your Convex environment once a deployment slug
-   exists. If you already have a deployment selected you only need to run the
-   script once.
-3. Start both the frontend and Convex dev server:
-   ```bash
-   npm run dev
-   ```
+1. Bootstrap dependencies, Convex metadata, and `.env.local` defaults:
 
-The app lives at `http://localhost:5173`.
+   ```bash
+    npm run setup:env
+   ```
+
+   This script installs all packages (`npm install`), runs `npm run generate` (builds the shared project and then calls `npx convex dev --once`) to initialize your Convex deployment, rotates `BETTER_AUTH_SECRET` (base64) and extends `.env.local`.
+
+<details>
+  <summary>More info</summary>
+
+```bash
+CONVEX_DEPLOYMENT=dev:adjective-animal-123
+VITE_CONVEX_URL=https://adjective-animal-123.convex.cloud
+VITE_CONVEX_SITE_URL=https://adjective-animal-123.convex.site
+VITE_SITE_URL=http://localhost:5173
+VITE_SIGNIN_ENABLE_PASSPHRASE=true
+VITE_SIGNIN_ENABLE_MAGIC_LINK=true
+VITE_SIGNIN_ENABLE_OTP=true
+VITE_SIGNIN_ENABLE_GOOGLE=false
+VITE_SIGNIN_ENABLE_GITHUB=false
+VITE_SIGNIN_ENABLE_APPLE=false
+SITE_URL=http://localhost:5173
+BETTERAUTH_EMAIL_CONSOLE_PREVIEW=false
+BETTERAUTH_RATE_LIMIT_ENABLED=true
+BETTERAUTH_RATE_LIMIT_WINDOW_SECONDS=60
+BETTERAUTH_RATE_LIMIT_MAX_REQUESTS=100
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+APPLE_CLIENT_ID=
+APPLE_CLIENT_SECRET=
+APPLE_APP_BUNDLE_IDENTIFIER=
+```
+
+Note: Client-side values stay in `.env.local`, while server settings (`SITE_URL`, `BETTERAUTH_*`, and provider secrets) are mirrored into your Convex environment via `npx convex env set` so they are alligned.
+
+   </details>
+
+2. Start both the frontend and Convex dev server:
+
+```bash
+ npm run dev
+```
+
+- The app now runs at `http://localhost:5173`.
+- Re-run `npm run update:env` whenever you tweak the .env.local to apply the same changes to Convex.
 
 ## Adapting to Your Own App
 
-1. Swap `src/components/Counter.tsx` (wired up in `src/App.tsx`) with your own feature component or route tree.
-2. Put any shared schemas or helpers in `shared/<feature>.ts`, mirror backend logic under `src/features/<feature>` and `convex/features/<feature>.ts`, and register new data purgers in `convex/features/authDomain/userDataRegistrations.ts`.
-3. Build UI with primitives from `src/components/ui` and fire toasts via `src/lib/toast` so behavior and styling stay consistent.
+1. Swap `src/components/Counter.tsx` (wired up in `src/App.tsx`) with your own feature component or route tree.
+2. Put any shared schemas or helpers in `shared/<feature>.ts`, mirror backend logic under `src/features/<feature>` and `convex/features/<feature>.ts`, and register new data purgers in `convex/features/authDomain/userDataRegistrations.ts`.
+3. Build UI with primitives from `src/components/ui` and fire toasts via `src/lib/toast` so behavior and styling stay consistent.
 
 Follow those steps and you can drop in a bespoke React surface without disturbing authentication or Convex wiring.
 
 ### Helpful Scripts
 
-- `npm run setup:env` – align `.env.local` with the template and sync Convex env values (`--dry-run`/`--skip-convex` available).
-- `npm run check` – type check, lint, formatting verification, and Vitest.
-- `npm run audit` – secretlint plus `npm audit --audit-level=moderate`.
-- `npm run test` – run Vitest directly (useful while iterating).
-- `npm run logs` – stream Convex logs from your active deployment.
+- `npm run setup:env` – install dependencies, build the shared project, initialize Convex, rotate `BETTER_AUTH_SECRET`, and sync env vars across `.env.local` and Convex.
+- `npm run update:env` – reapply `.env.example` defaults and push updated values to Convex without reinstalling.
+- `npm run check` – type check, lint, formatting verification, and Vitest.
+- `npm run audit` – secretlint plus `npm audit --audit-level=moderate`.
+- `npm run test` – run Vitest directly (useful while iterating).
+- `npm run logs` – stream Convex logs from your active deployment.
 
 ## Environment Reference
 
-| Location     | Key                                         | Purpose                                                                           |
+| Location     | Key                                         | Purpose                                                                           |
 | ------------ | ------------------------------------------- | --------------------------------------------------------------------------------- |
-| `.env.local` | `VITE_CONVEX_URL`                           | Convex deployment URL used by the Vite dev server (auto-set during `convex dev`). |
-| `.env.local` | `VITE_CONVEX_SITE_URL`                      | Base URL Better Auth uses for API calls from the browser.                         |
-| `.env.local` | `VITE_SITE_URL`                             | Public site URL surfaced in emails and redirects (defaults to local dev).         |
-| `.env.local` | `VITE_SIGNIN_ENABLE_PASSPHRASE`             | `true` to keep the passphrase form visible on the sign-in screen.                 |
-| `.env.local` | `VITE_SIGNIN_ENABLE_MAGIC_LINK`             | `true` exposes magic link sign-in alongside other passphraseless flows.           |
-| `.env.local` | `VITE_SIGNIN_ENABLE_OTP`                    | `true` enables email one-time code sign-in (and verification UI).                 |
-| `.env.local` | `VITE_SIGNIN_ENABLE_GOOGLE`                 | `true` shows the Google sign-in button when credentials are configured.           |
-| `.env.local` | `VITE_SIGNIN_ENABLE_GITHUB`                 | `true` shows the GitHub sign-in button when credentials are configured.           |
-| `.env.local` | `VITE_SIGNIN_ENABLE_APPLE`                  | `true` shows the Apple sign-in button when credentials are configured.            |
-| Convex env   | `SITE_URL`                                  | Same as `VITE_SITE_URL`, but consumed on the server.                              |
-| Convex env   | `BETTER_AUTH_SECRET`                        | Symmetric secret Better Auth uses to sign sessions.                               |
-| Convex env   | `BETTERAUTH_EMAIL_CONSOLE_PREVIEW`          | `true` to log rendered emails instead of sending them.                            |
-| Convex env   | `BETTERAUTH_EMAIL_BRAND_NAME`               | Optional brand name override surfaced in all transactional emails.                |
-| Convex env   | `BETTERAUTH_EMAIL_BRAND_TAGLINE`            | Optional tagline override displayed in email footers.                             |
-| Convex env   | `BETTERAUTH_EMAIL_BRAND_LOGO_URL`           | Optional logo URL rendered alongside email content when provided.                 |
-| Convex env   | `BETTERAUTH_RATE_LIMIT_ENABLED`             | Override the default limiter toggle (`true` or `false`).                          |
-| Convex env   | `BETTERAUTH_RATE_LIMIT_WINDOW_SECONDS`      | Optional override controlling the limiter window in seconds.                      |
-| Convex env   | `BETTERAUTH_RATE_LIMIT_MAX_REQUESTS`        | Optional override for allowed requests within each window.                        |
-| Convex env   | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | Optional GitHub OAuth pair for social sign-in.                                    |
-| Convex env   | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Optional Google OAuth pair for social sign-in.                                    |
-| Convex env   | `APPLE_CLIENT_ID` / `APPLE_CLIENT_SECRET`   | Optional Apple OAuth pair for social sign-in.                                     |
-| Convex env   | `APPLE_APP_BUNDLE_IDENTIFIER`               | Optional bundle identifier when signing in with native Apple ID tokens.           |
-| Convex env   | `RESEND_API_KEY`                            | Unlocks live delivery through Resend.                                             |
+| `.env.local` | `VITE_CONVEX_URL`                           | Convex deployment URL used by the Vite dev server (auto-set during `convex dev`). |
+| `.env.local` | `VITE_CONVEX_SITE_URL`                      | Base URL Better Auth uses for API calls from the browser.                         |
+| `.env.local` | `VITE_SITE_URL`                             | Public site URL surfaced in emails and redirects (defaults to local dev).         |
+| `.env.local` | `VITE_BRAND_NAME`                           | Primary brand name rendered in the UI shell and transactional emails.             |
+| `.env.local` | `VITE_BRAND_TAGLINE`                        | Short supporting copy shown in email footers; keep it punchy.                     |
+| `.env.local` | `VITE_BRAND_LOGO_URL`                       | Absolute URL for a square logo used in email footers (leave blank to omit).       |
+| `.env.local` | `VITE_SIGNIN_ENABLE_PASSPHRASE`             | `true` to keep the passphrase form visible on the sign-in screen.                 |
+| `.env.local` | `VITE_SIGNIN_ENABLE_MAGIC_LINK`             | `true` exposes magic link sign-in alongside other passphraseless flows.           |
+| `.env.local` | `VITE_SIGNIN_ENABLE_OTP`                    | `true` enables email one-time code sign-in (and verification UI).                 |
+| `.env.local` | `VITE_SIGNIN_ENABLE_GOOGLE`                 | `true` shows the Google sign-in button when credentials are configured.           |
+| `.env.local` | `VITE_SIGNIN_ENABLE_GITHUB`                 | `true` shows the GitHub sign-in button when credentials are configured.           |
+| `.env.local` | `VITE_SIGNIN_ENABLE_APPLE`                  | `true` shows the Apple sign-in button when credentials are configured.            |
+| Convex env   | `SITE_URL`                                  | Same as `VITE_SITE_URL`, but consumed on the server.                              |
+| Convex env   | `BETTER_AUTH_SECRET`                        | Symmetric secret Better Auth uses to sign sessions.                               |
+| Convex env   | `BETTERAUTH_EMAIL_CONSOLE_PREVIEW`          | `true` to log rendered emails instead of sending them.                            |
+| Convex env   | `BETTERAUTH_RATE_LIMIT_ENABLED`             | Override the default limiter toggle (`true` or `false`).                          |
+| Convex env   | `BETTERAUTH_RATE_LIMIT_WINDOW_SECONDS`      | Optional override controlling the limiter window in seconds.                      |
+| Convex env   | `BETTERAUTH_RATE_LIMIT_MAX_REQUESTS`        | Optional override for allowed requests within each window.                        |
+| Convex env   | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | Optional GitHub OAuth pair for social sign-in (leave blank to disable GitHub).    |
+| Convex env   | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Optional Google OAuth pair for social sign-in (leave blank to disable Google).    |
+| Convex env   | `APPLE_CLIENT_ID` / `APPLE_CLIENT_SECRET`   | Optional Apple OAuth pair for social sign-in (leave blank to disable Apple).      |
+| Convex env   | `APPLE_APP_BUNDLE_IDENTIFIER`               | Optional bundle identifier when signing in with native Apple ID tokens.           |
+| Convex env   | `RESEND_API_KEY`                            | Unlocks live delivery through Resend.                                             |
+
+## Testing
+
+We keep shipping safe by leaning on the automation baked into `npm run check` and `npm run audit`. Run both before you push or open a PR. Tests live beside the code they cover (e.g. `src/features/counter/components/Counter.spec.tsx`).
+
+## Project Layout
+
+```
+├── src/                 # React 19 app; features live in src/features/<domain>
+│   ├── components/      # Shared UI primitives (ui/* vendor) and app-level hooks
+│   ├── features/        # Signed-in surfaces mirroring Convex domains
+│   └── providers/       # Theme + context providers mounted at the root
+├── convex/              # Convex backend (Better Auth, feature actions, schedulers)
+│   └── features/        # Backend counterparts to client domains
+├── shared/              # Cross-tier schemas, rate limits, and user data purgers
+├── types/               # Ambient type declarations shared across tiers
+├── scripts/             # Automation (env setup, feature parity, secret scans)
+├── components.json      # UI generator configuration (do not edit vendor exports)
+├── .env.example         # Template env vars (keep .env.local in sync)
+├── .env.local           # Developer overrides; never commit real secrets
+├── vite.config.ts       # Vite build and dev server configuration
+└── package.json         # Workspace metadata plus npm scripts
